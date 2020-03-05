@@ -27,10 +27,8 @@ type LayersIndex struct {
 	applicationRoot string
 	layersIndexFile string
 
-	layersIndexDir   string
 	defaultLayerName string
-
-	layerPathRegex *regexp.Regexp
+	layerPathRegex   *regexp.Regexp
 }
 
 func (l LayersIndex) layerNames() ([]string, error) {
@@ -48,24 +46,6 @@ func (l LayersIndex) layerNames() ([]string, error) {
 	}
 
 	return layerNames, nil
-}
-
-func (l LayersIndex) layerClassPaths() ([]string, error) {
-	if l.layersIndexFile == "" {
-		return nil, nil
-	}
-
-	layerNames, err := l.layerNames()
-	if err != nil {
-		return nil, err
-	}
-
-	var layerPaths []string
-	for _, layerName := range layerNames {
-		layerPaths = append(layerPaths, filepath.Join(l.applicationRoot, l.layersIndexDir, "layers", layerName, "classes"))
-	}
-
-	return layerPaths, nil
 }
 
 func (l LayersIndex) layerNameForPath(path string, layerNames []string) string {
@@ -115,7 +95,6 @@ func NewLayersIndex(applicationRoot string, layersIndexFile string) LayersIndex 
 	return LayersIndex{
 		applicationRoot,
 		layersIndexFile,
-		layersIndexDir,
 		"application",
 		regexp.MustCompile(`^` + layersIndexDir + `layers/([a-zA-Z0-9-]+)/.*$`),
 	}

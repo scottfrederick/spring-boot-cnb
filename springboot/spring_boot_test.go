@@ -18,7 +18,6 @@ package springboot_test
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/cloudfoundry/libcfbuildpack/v2/buildpackplan"
@@ -56,7 +55,6 @@ func TestSpringBoot(t *testing.T) {
 					`
 Spring-Boot-Classes: test-classes
 Spring-Boot-Lib: test-lib
-Start-Class: test-start-class
 Spring-Boot-Version: test-version`)
 
 				_, ok, err := springboot.NewSpringBoot(f.Build)
@@ -75,7 +73,7 @@ Spring-Boot-Version: test-version`)
 				`
 Spring-Boot-Classes: test-classes
 Spring-Boot-Lib: test-lib
-Start-Class: test-start-class
+Main-Class: test-launcher
 Spring-Boot-Version: test-version`)
 
 			e, ok, err := springboot.NewSpringBoot(f.Build)
@@ -86,15 +84,10 @@ Spring-Boot-Version: test-version`)
 				Name:    springboot.Dependency,
 				Version: "",
 				Metadata: buildpackplan.Metadata{
-					"lib":         "test-lib",
-					"start-class": "test-start-class",
-					"version":     "test-version",
-					"classes":     "test-classes",
-					"classpath": []string{
-						filepath.Join(f.Build.Application.Root, "test-classes"),
-						filepath.Join(f.Build.Application.Root, "test-lib", "test-artifact-1-1.2.3.jar"),
-						filepath.Join(f.Build.Application.Root, "test-lib", "test-artifact-2-4.5.6-SNAPSHOT.jar"),
-					},
+					"lib":        "test-lib",
+					"main-class": "test-launcher",
+					"version":    "test-version",
+					"classes":    "test-classes",
 					"dependencies": springboot.JARDependencies{
 						{
 							Name:    "test-artifact-1",
@@ -117,7 +110,7 @@ Spring-Boot-Version: test-version`)
 				`
 Spring-Boot-Classes: test-classes
 Spring-Boot-Lib: test-lib
-Start-Class: test-start-class
+Main-Class: test-launcher
 Spring-Boot-Version: test-version`)
 
 			e, ok, err := springboot.NewSpringBoot(f.Build)
@@ -128,13 +121,10 @@ Spring-Boot-Version: test-version`)
 				Name:    springboot.Dependency,
 				Version: "",
 				Metadata: buildpackplan.Metadata{
-					"lib":         "test-lib",
-					"start-class": "test-start-class",
-					"version":     "test-version",
-					"classes":     "test-classes",
-					"classpath": []string{
-						filepath.Join(f.Build.Application.Root, "test-classes"),
-					},
+					"lib":          "test-lib",
+					"main-class":   "test-launcher",
+					"version":      "test-version",
+					"classes":      "test-classes",
 					"dependencies": springboot.JARDependencies{},
 					"layers-index": "",
 				},
@@ -147,7 +137,7 @@ Spring-Boot-Version: test-version`)
 				`
 Spring-Boot-Classes: test-classes
 Spring-Boot-Lib: test-lib
-Start-Class: test-start-class
+Main-Class: test-launcher
 Spring-Boot-Version: test-version`)
 
 			e, ok, err := springboot.NewSpringBoot(f.Build)
@@ -156,14 +146,7 @@ Spring-Boot-Version: test-version`)
 
 			g.Expect(e.Contribute()).To(gomega.Succeed())
 
-			layer := f.Build.Layers.Layer("spring-boot")
-			g.Expect(layer).To(test.HaveLayerMetadata(true, true, true))
-			g.Expect(layer).To(test.HavePrependPathSharedEnvironment("CLASSPATH", strings.Join([]string{
-				filepath.Join(f.Build.Application.Root, "test-classes"),
-				filepath.Join(f.Build.Application.Root, "test-lib", "test.jar"),
-			}, string(filepath.ListSeparator))))
-
-			command := "java -cp $CLASSPATH $JAVA_OPTS test-start-class"
+			command := "java $JAVA_OPTS test-launcher"
 			g.Expect(f.Build.Layers).To(test.HaveApplicationMetadata(layers.Metadata{
 				Slices: layers.Slices{
 					{},

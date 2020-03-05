@@ -51,7 +51,6 @@ func TestDefaultSlicer(t *testing.T) {
 					`
 Spring-Boot-Classes: test-classes
 Spring-Boot-Lib: test-lib
-Start-Class: test-start-class
 Spring-Boot-Version: test-version`)
 
 				md, ok, err := springboot.NewMetadata(f.Build.Application, f.Build.Logger)

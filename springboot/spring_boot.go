@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 
 	"github.com/buildpacks/libbuildpack/v2/application"
@@ -51,18 +50,12 @@ type SpringBoot struct {
 
 // Contribute makes the contribution to build, cache, and launch.
 func (s SpringBoot) Contribute() error {
-	if err := s.layer.Contribute(s.Metadata, func(layer layers.Layer) error {
-		return layer.PrependPathSharedEnv("CLASSPATH", strings.Join(s.Metadata.ClassPath, string(filepath.ListSeparator)))
-	}, layers.Build, layers.Cache, layers.Launch); err != nil {
-		return err
-	}
-
 	slices, err := s.slicer.Slice()
 	if err != nil {
 		return err
 	}
 
-	command := fmt.Sprintf("java -cp $CLASSPATH $JAVA_OPTS %s", s.Metadata.StartClass)
+	command := fmt.Sprintf("java $JAVA_OPTS %s", s.Metadata.MainClass)
 
 	return s.layers.WriteApplicationMetadata(layers.Metadata{
 		Slices: slices,
